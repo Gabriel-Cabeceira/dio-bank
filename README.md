@@ -5,7 +5,7 @@ Este projeto, denominado "DIO Bank", faz parte de um estudo em TypeScript. O obj
 
 ## Descrição do Projeto
 
-A aplicação simula uma API bancária onde até o momento realiza a criação, pesquisa e exclusão de usuários. Projeto realizado utilizando Testes unitários.
+A aplicação simula uma API bancária onde até o momento realiza a criação e pesquisa de dados de usuário após autenticado. Projeto realizado utilizando Testes unitários.
 
 
 ## Instruções de Uso
@@ -19,9 +19,13 @@ A aplicação simula uma API bancária onde até o momento realiza a criação, 
     cd dio-bank-back-end
     npm install
 
+- Inicie o container do Banco de dados
+
+    docker-compose up -d
+
 - Inicie a aplicação.
 
-    npm start
+    npm run start
 
 
 ## Tecnologias Utilizadas
@@ -30,3 +34,5 @@ A aplicação simula uma API bancária onde até o momento realiza a criação, 
 - Jest (para testes unitários)
 - Node.js
 - Express
+- Docker compose
+- MariaDB

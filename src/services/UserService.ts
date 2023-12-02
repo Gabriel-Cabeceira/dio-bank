@@ -1,62 +1,75 @@
-export interface User {
-    name: string
-    email: string
-}
+import { AppDataSource } from "../database";
+import { User } from "../entities/User";
+import { UserRepository } from "../repositories/UserRespository";
+import { sign } from 'jsonwebtoken';
 
-
-// Simulated Data Base
-const db = [
-    {
-        name: "gabriel",
-        email: "gabriel@dio.com"
-    },
-    {
-        name: "Aline",
-        email: "aline@dio.com"
-    }
-]
 
 export class UserService {
 
-    db: User[] = [
-        {
-            name: "Teste da Silva",
-            email: "test@dio.com"
-        }
-    ]
+    private userRepository: UserRepository
 
-    constructor(database = db){
-        this.db = database
+    constructor(
+        userRepository = new UserRepository(AppDataSource.manager)
+    ){
+        this.userRepository = userRepository
     }
+
 
     // Function that create users in Data Base
-    createUser = (name: string, email: string): boolean => {
-        const user = {
-            name,
-            email
+    createUser = (name: string, email: string, password: string): Promise<User> => {
+        const user = new User(name, email, password)
+        return this.userRepository.createUser(user)
+    }
+
+    // Function that get all users in Data Base
+    getUser = async (userId: string): Promise<User | null> => {
+        return this.userRepository.getUser(userId)
+    }
+
+    // Function that returns the authenticated user
+    getAuthenticatedUser = (email: string, password: string): Promise<User | null> => {
+        return this.userRepository.getUserByEmailAndPassword(email, password)
+    }
+
+    // Function that gets the token
+    getToken = async (email: string, password: string): Promise<string> => {
+
+        const user = await this.getAuthenticatedUser(email, password)
+        
+        if(!user){
+            throw new Error('Email ou Senha inválidos');
         }
-        this.db.push(user);
-        return true;
-    }
 
-    // Funcion that get all users in Data Base
-    getAllUsers = () => {
-        return this.db
-    }
-
-    // Functions taht delete users from Data Base
-    deleteUser = (email: string): boolean | undefined => {
-        const userIndex = this.db.findIndex(user => user.email === email);
-        let deleted = false
-
-        if(userIndex !== -1){
-            deleted = true;
-            if(deleted){
-                this.db.splice(userIndex, 1);
-                return deleted;
-            }
-        } else {
-            return deleted;
+        const tokenData = {
+            name: user?.name,
+            email: user?.email
         }
+
+        const tokenKey = '123456789'
+
+        const tokenOptions = {
+            subject: user?.user_id
+        }
+
+        const token = sign(tokenData, tokenKey, tokenOptions)
+
+        return token
     }
+
+
+    // // Functions taht delete users from Data Base
+    // deleteUser = (email: string): boolean | undefined => {
+    //     const userIndex = this.db.findIndex(user => user.email === email);
+    //     let deleted = false
+
+    //     if(userIndex !== -1){
+    //         deleted = true;
+    //         if(deleted){
+    //             this.db.splice(userIndex, 1);
+    //             return deleted;
+    //         }
+    //     } else {
+    //         return deleted;
+    //     }
+    // }
 }

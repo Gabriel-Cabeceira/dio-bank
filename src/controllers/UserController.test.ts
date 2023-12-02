@@ -1,28 +1,34 @@
 import { makeMockRequest } from "../__mocks__/mockRequest.mock";
 import { makeMockResponse } from "../__mocks__/mockResponse.mock";
-import { User, UserService } from "../services/UserService";
 import { UserController } from "./UserController";
 import { Request } from 'express';
 
+const mockUserService = {
+    createUser: jest.fn(),
+    getUser: jest.fn()
+}
+
+jest.mock('../services/UserService', () => {
+    return {
+        UserService: jest.fn().mockImplementation(() => {
+            return mockUserService
+        })
+    }
+});
 
 
 describe('User controller', () => {
 
-    const mockDb: User[] = [
-        {
-            "name": "Teste da Silva",
-            "email": "test@dio.com"
-        }
-    ]
-    const userService = new UserService(mockDb);
+    const userController = new UserController()
 
-    const userController = new UserController(userService);
+    const mockResponse = makeMockResponse();
 
     it('A função createUser deve retornar que o nome é obrigatório', () => {
         const mockRequest = {
             body: {
                 name: '',
-                email: 'teste@teste.com'
+                email: 'teste@teste.com',
+                password: 'Senha123'
             }
         } as Request
 
@@ -36,7 +42,8 @@ describe('User controller', () => {
         const mockRequest = {
             body: {
                 name: 'Teste',
-                email: ''
+                email: '',
+                password: 'Senha123'
             }
         } as Request
 
@@ -50,7 +57,8 @@ describe('User controller', () => {
         const mockRequest = {
             body: {
                 name: 'Gabriel Cabeceira',
-                email: 'gabriel@dio.com'
+                email: 'gabriel@dio.com',
+                password: 'Senha123'
             }
         } as Request
 
@@ -60,35 +68,16 @@ describe('User controller', () => {
         expect(mockResponse.state.json).toMatchObject({message: 'Usuário criado com sucesso'});
     })
 
-    it('A função getAllUsers deve ser chamada e exibir os usuários', () => {
-        const mockRequest = {} as Request
-        const mockResponse = makeMockResponse();
-        userController.getAllUsers(mockRequest, mockResponse);
-        expect(mockResponse.state.status).toBe(200);
-
-        // Espera o retorno dos dois objetos pois um deles foi criado pela função anteriormente
-        expect(mockResponse.state.json).toMatchObject(
-            [
-                {
-                     name: 'Teste da Silva',
-                     email: 'test@dio.com' 
-                },
-                { 
-                    name: 'Gabriel Cabeceira',
-                    email: 'gabriel@dio.com'
-                }
-            ]
-        )
-    })
-
-    it('A função deleteUser deve ser chamada e deletar o usuário informado na requisição', () => {
-        const mockRequest = {
-            body: {
-                email: "test@dio.com"
+    it('Deve retornar o usuário com o userId informado', async () => {
+        const mockRequest = makeMockRequest({
+            params: {
+                userId: '123456'
             }
-        } as Request
-        const mockResponse = makeMockResponse();
-        userController.deleteUser(mockRequest, mockResponse);
+        });
+
+        await userController.getUser(mockRequest, mockResponse);
+        expect(mockUserService.getUser).toHaveBeenCalledWith('123456')
         expect(mockResponse.state.status).toBe(200)
     })
+
 })

@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { UserController } from './controllers/UserController';
 import { router } from './routes';
 
+
 const server = express();
 
 const port: number = 5000
